@@ -35,27 +35,29 @@ If you start googoling state management in React you'll end up finding either a 
 
 ---
 
+class: ticks3
+
 ## Which one to pick?
 
-???
-
-Which one to Pick?
-
----
-
-
-
----
-
-class: fullscreenw
-
-![tree](img/eden2.jpg)
+.appear[
+    redux || mobx
+]
 
 ???
 
-Living trees are awesome. Unless you eat from the wrong one. Then you die.
+Which one to Pick? 
+Those libraries are based on opposite concepts, with their pros and cons...
 
-But that is a feature in itself. I will elaborate on that later.
+---
+
+redux && mobx
+.appear[
+    ## mobx-state-tree
+]
+
+???
+
+Would'nt be awesome to get the best of both world?
 
 ---
 
