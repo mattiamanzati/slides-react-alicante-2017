@@ -1,0 +1,288 @@
+@import url('https://fonts.googleapis.com/css?family=Playfair+Display|Raleway|Archivo+Black|Roboto:400,700,900');
+
+h1, h2, h3 {
+    /*font-family: 'Playfair Display', serif;
+    font-family: 'Archivo Black';*/
+    font-family: 'Roboto', sans-serif;
+    font-weight: 700;
+}
+
+body {
+    /*font-family: 'Raleway', sans-serif;*/
+    font-family: 'Roboto', sans-serif;
+    color: black;
+}
+
+.remark-slide-content {
+    background-color: white;
+}
+
+table {
+    width: 100%;
+}
+
+h1 {
+    position: absolute;
+    top: 10px;
+    display: block;
+    text-align: center;
+    width: calc(1280px - 4em);
+    /*border-bottom: 1px solid #ddd;*/
+    font-size: 40px;
+}
+
+p, li, div {
+    font-size: 36px;
+}
+
+p {
+    margin-top: 0.5em;
+    margin-bottom: 0.5em;
+}
+
+small {
+    font-size: 28px;
+}
+
+.remark-slide-number {
+    /*font-size: 20px;*/
+    display: none
+}
+
+a, :visited {
+    text-decoration: none;
+    font-style: italic;
+    color: orangered;
+}
+
+hr {
+    width: 30%;
+    border: 1px solid black;
+    margin-top: 1em;
+    margin-bottom: 1em;
+}
+
+.remark-code, .remark-code-line {
+    font-size: 22px;
+}
+
+.boring .remark-code {
+    background-color: black;
+    padding: 0em 8em !important;
+    opacity: 0.7;
+}
+
+.remark-slide-content pre {
+    margin-top: 0.5em;
+    margin-bottom: 0.5em;
+}
+
+ul, ol {
+    text-align: left;
+    display: inline-block;
+    clear: both;
+}
+
+.appear {
+    visibility: hidden;
+}
+
+.remark-slide-content {
+    vertical-align: middle;
+    text-align: center;
+}
+
+.remark-slide-content ol, .remark-slide-content ul {
+    text-align: left;
+    margin-left: 4em;
+}
+
+.remark-slide-content pre {
+    text-align: left;
+    margin-left: -4em;
+    margin-right: -4em;
+    padding-left: 0;
+    padding-right: 0;
+}
+
+.remark-slide-content pre  code.remark-code {
+    padding: 0.5em 8em;
+}
+
+.remark-inline-code {
+    font-size: 0.9em;
+    color: orangered;
+}
+
+.remark-slide-content .appeared pre code,
+.remark-slide-content .boring pre code
+{
+    margin-left: 3em;
+}
+
+.fullscreen, .fullscreenw, .boxedimg {
+    padding: 0
+}
+
+.fullscreen p, .fullscreenw p, .boxedimg p {
+    margin: 0;
+    display: block;
+    width: 100%;
+    top: 0px;
+    position: absolute;
+    bottom: 0px;
+    text-align: center;
+}
+
+.fullscreen img {
+    vertical-align: middle;
+    height: 681px;
+}
+
+.fullscreenw img {
+    vertical-align: middle;
+    width: 100%;
+}
+
+.boxedimg img {
+    max-width: 90%;
+    max-height: 90%;
+    margin: 0;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.stacked img {
+    top: 0px;
+    left: 0px;
+    position: absolute;
+}
+
+div.background {
+    top: 0px;
+    left: 0px;
+    position: absolute;
+    width: 1210px;
+    height: 681px;
+    opacity: 0.99;
+    vertical-align: middle;
+    text-align: center;
+}
+
+div.background img {
+    max-width: 100%;
+}
+
+div.lighten {
+    opacity: 0.6 !important;
+}
+
+.whitebg {
+    background-color: white !important;
+}
+
+.layer1 {
+    position: absolute;
+    left: 0px;
+    top: 0px;
+    z-index: 1;
+    height: 681px;
+    width: 1210px;
+    margin-left: 80px;
+    margin-top: 149px;
+}
+
+/* ---- */
+
+.box-actions {
+    color: white;
+    background-color: #f99b1d;
+    width: 30%;
+    height: 300px;
+}
+
+.box-state {
+    color: white;
+    background-color: #1780b9;
+    width: 30%;
+    height: 300px;
+}
+
+.box-computed {
+    color: white;
+    background-color: #76ca02;
+    width: 30%;
+    height: 150px;
+}
+
+.box-reactions {
+    color: white;
+    background-color: orangered;
+    width: 30%;
+    height: 150px;
+}
+
+.box1, .box1 code {
+    color: #1780b9;
+}
+.box3, .box3 code {
+    color: #76ca02;
+}
+.box4, .box4 code {
+    color: orangered;
+}
+.box2, .box2 code {
+    color: #f99b1d;
+}
+
+.box1, .box2, .box3, .box4 {
+    font-weight: bold;
+}
+
+.ticks2 p, .ticks3 p {
+    line-height: 0.85em;
+}
+
+.ticks2 .tick1, .ticks2 .tick2 {
+        width: 60%;
+}
+
+.ticks3 .tick1, .ticks3 .tick2 {
+        width: 80%;
+}
+
+.tick1, .tick2 {
+    border-bottom: 1px solid #ccc;
+    padding: 0px 4px 4px 0px;
+    display: inline-block;
+    text-align: left;
+    font-size: 0.6em;
+}
+
+.tick1 .em, .tick2 .em {
+    position: absolute;
+    font-size: 0.7em;
+}
+
+.ticks2 .tick1 .em-white_check_mark {
+    left: 614px;
+}
+.ticks2 .tick2 .em-white_check_mark {
+    left: 800px;
+}
+
+.ticks3 .tick1 .em-white_check_mark {
+    left: 520px;
+}
+.ticks3 .tick2 .em-white_check_mark {
+    left: 702px;
+}
+.ticks3 .tick1 .em-palm_tree, .ticks3 .tick2 .em-palm_tree {
+    left: 881px;
+}
+.tick1.faded, .tick2.faded {
+    opacity: 0.2;
+}
+
