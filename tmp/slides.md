@@ -40,7 +40,7 @@ class: ticks3
 ## Which one to pick?
 
 .appear[
-    redux || mobx
+    `redux || mobx`
 ]
 
 ???
@@ -50,7 +50,7 @@ Those libraries are based on opposite concepts, with their pros and cons...
 
 ---
 
-redux && mobx
+`redux && mobx`
 .appear[
     ## mobx-state-tree
 ]
