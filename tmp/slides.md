@@ -42,17 +42,35 @@ class: ticks3
 .appear[
     `redux || mobx`
 ]
+.appear[
+    `itDepends`
+]
 
 ???
 
 Which one to Pick? 
+
+---
+
+## Comparing the opposite patterns
+
+.appear[
+    `redux === immutable`
+]
+.appear[
+    `mobx === mutable`
+]
+
+???
+
 Those libraries are based on opposite concepts, with their pros and cons...
+Redux base all its architecture on immutable data, whilst MobX uses the power of mutable observable objects.
 
 ---
 
 `redux && mobx`
 .appear[
-    ## mobx-state-tree
+    `true`
 ]
 
 ???
@@ -61,60 +79,263 @@ Would'nt be awesome to get the best of both world?
 
 ---
 
-`redux || mobx`
+## MobX-State-Tree
 
-.appear[
-    `true`
-]
+<img src="img/react.svg" width="50" /> It's React
 
-???
+<img src="img/git.png" width="50" /> It's Git
 
-There is often a heated debate. I am no neutral party in the discussion, but lets recap the two strategies in general. And I oversimplify and generalize to do that
+...but for data
 
----
-
-MobX vs Redux: Comparing the Opposing Paradigm
-
-.appear[
-        <i class="em em-arrow_double_down"></i>
-
-MobX vs Redux: *Combining* the Opposing Paradigm
-]
 
 ???
 
-Can we have all the cool things of Redux, without it's learning curve?
-
-You might now all have digested that. TIme to confuse you with something new
+Today we'll discover together MobX-State-Tree, a library that tries to merge the best of both worlds, for an optimal developer experience.
 
 ---
 
-<img src="img/logo.png" style="height:150px"/>
+## Shaping the data
 
-## mobx-state-tree
+???
 
-*A living, opinionated, state tree*
-
----
-
-<img src="img/logo.png" style="height:150px"/>
-
-## mobx-state-tree
-
-The best ideas<i class="em em-bulb"></i>
-<br/>+<br/>
-The best practices<i class="em em-construction_worker"></i>
-<br/>=<br/>
-The best productivity<i class="em em-running"></i>
+Let's start by giving a look at how we define our data shape.
 
 ---
 
-# Mutable Model Graphs
+## Redux
 
-<br/>
-<br/>
+```javascript
+const initialState = {name: "", done: false}
+function todoReducer(state = initialState, action){
+    if(!action) return state
 
-![graph1](img/graph1.png)
+    switch(action.type){
+        case TOGGLE_TODO:
+            return ({...state, done: !state.done})
+        default:
+            return state
+    }
+}
+```
+
+???
+
+In Redux the reducer could be considered the core concept of data modeling, and that's predictable.
+Since we are dealing with immutable data, we could not change an instance, so the focus of our code will
+always be the data transformation rather than it's shape.
+Due to that, our data shape is kinda lost in all of that code.
+
+---
+
+## Redux
+
+```javascript
+const TOGGLE_TODO = 'todo/TOGGLE_TODO'
+export function toggleTodo(){
+    return { type: TOGGLE_TODO }
+}
+```
+
+???
+
+And while we are at it, we could note that reducer and actions are'nt colocated, and that IMHO could potentially make our code less readable.
+
+---
+
+## MobX
+
+```javascript
+class Todo {
+    @observable name: string = ""
+    @observable done: boolean = false
+
+    @action toggle(){
+        this.done != this.done
+    }
+}
+```
+
+???
+
+Most of the people using MobX up to now used ES6 classes up to now, and that's nice. It lets you write clean code that express both data shape and actions in the same place making it highly readable.
+
+---
+
+### MobX 
+.appear[Pros: Data shape is clear]
+
+### Redux
+.appear[Cons: Data shape is kinda lost]
+
+---
+
+## Data Rehydration
+
+```javascript
+const serverData = { 
+    name: "Attend React Alicante", 
+    done: true
+}
+```
+
+---
+
+### Redux
+
+```javascript
+const newState = todoReducer(serverData, toggleTodo())
+// newState.done === false
+```
+
+???
+
+Since Redux uses immutable objects, they won't contain any application business logic like actions, computeds, etc...
+So it is really easy to rehydrate data onto our store, you just need to pass it onto your reducer.
+---
+
+### MobX
+
+```javascript
+class Todo {
+    // ...
+    @computed snapshot(){
+        return {
+            name: this.name,
+            done: this.done
+        }
+    }
+
+    @action applySnapshot(snapshot){
+        this.name = snapshot.name
+        this.done = snapshot.done
+    }
+}
+```
+
+???
+
+Unfortunately, MobX uses classes, so it won't accept our server data, we need to define a property and a method to manage de/serialization.
+
+---
+### MobX 
+.appear[Cons: Use classes, internal state, hard de/serialization]
+
+### Redux
+.appear[Pros: Use plain objects, external state, no need for de/serialization]
+
+---
+
+## Snapshot are awesome!
+- Allow time travel
+- Make testing easier
+- Better dev tools
+
+.appear[
+## Such benefits... 
+]
+
+.appear[
+## such LOC cost!
+]
+
+---
+
+## What we need to get them for free?
+.appear[We need to know the data shape]
+
+.appear[De/serialization fn() for each shape]
+
+---
+
+## MobX-State-Tree
+Getting the best of both worlds!
+
+---
+
+### Defining data shape
+```javascript
+import {types} from "mobx-state-tree"
+
+const Todo = types.model({
+    name: "",
+    done: false
+})
+.actions(self => ({
+    toggle(){
+        self.done != self.done
+    }
+}))
+```
+
+.appear[
+### Creating a model instance
+```javascript
+const work = Todo.create()
+work.toggle()
+```
+]
+
+---
+
+### Getting an instance snapshot
+```javascript
+import {getSnapshot} from "mobx-state-tree"
+
+const serializedData = getSnapshot(work)
+```
+
+.appear[
+### Creating an instance from a snapshot
+```javascript
+const work = Todo.create(serverData)
+```
+]
+
+.appear[
+### Updating an instance from a snapshot
+```javascript
+import {applySnapshot} from "mobx-state-tree"
+
+applySnapshot(work, serverData)
+```
+]
+
+---
+
+
+### How to listen for snapshot changes?
+```javascript
+import {onSnapshot} from "mobx-state-tree"
+
+onSnapshot(work, newSnapshot => {
+    console.log("New store snapshot:", newSnapshot)
+
+    window.localStorage.setItem(
+        "todo", 
+        JSON.stringify(newSnapshot)
+    )
+})
+```
+
+---
+
+## What about fancy time travelling?
+
+```javascript
+import {onSnapshot, applySnapshot} from "mobx-state-tree"
+
+const appStates = []
+onSnapshot(work, newSnapshot => 
+    appStates.push(newSnapshot)
+)
+
+function travelAt(index){
+    applySnapshot(store, appStates[index])
+}
+```
+
+???
+With all those bounties, implementing time travel becames pretty straight forward.
 
 ---
 

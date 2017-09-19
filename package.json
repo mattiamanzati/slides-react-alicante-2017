@@ -3,11 +3,8 @@
     "version": "1.0.0",
     "description": "",
     "main": "index.js",
-    "config": {
-      "build": "--include-remark --output-file index.html --style src/slides.css --template assets/template.html --script assets/slides.js tmp/slides.md"
-    },
     "scripts": {
-      "build": "node assets/build.js && markdown-to-slides $npm_package_config_build",
+      "build": "node assets/build.js && markdown-to-slides --include-remark --output-file index.html --style src/slides.css --template assets/template.html --script assets/slides.js tmp/slides.md",
       "_watch": "gaze \"npm run build\" \"src/*\"",
       "start": "npm run build && concurrently \"npm run _watch\" \"servant -p 3002 -w --watch-pattern '/index.html'\""
     },
