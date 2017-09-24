@@ -66,32 +66,6 @@ Redux base all its architecture on immutable data, whilst MobX uses the power of
 
 ---
 
-`redux && mobx`
-.appear[
-    `true`
-]
-
-???
-
-Would'nt be awesome to get the best of both world?
-
----
-
-## MobX-State-Tree
-
-<img src="img/react.svg" width="50" /> It's React
-
-<img src="img/git.png" width="50" /> It's Git
-
-...but for data
-
-
-???
-
-Today we'll discover together MobX-State-Tree, a library that tries to merge the best of both worlds, for an optimal developer experience.
-
----
-
 ## Shaping the data
 
 ???
@@ -223,7 +197,7 @@ Unfortunately, MobX uses classes, so it won't accept our server data, we need to
 
 ---
 
-## Snapshot are awesome!
+## Redux state snapshots are awesome!
 - Allow time travel
 - Make testing easier
 - Better dev tools
@@ -233,20 +207,63 @@ Unfortunately, MobX uses classes, so it won't accept our server data, we need to
 ]
 
 .appear[
-## such LOC cost!
+## in MobX such LOC cost!
 ]
 
 ---
 
-## What we need to get them for free?
+## What if we could get them for free?
 .appear[We need to know the data shape]
 
-.appear[De/serialization fn() for each shape]
+.appear[We need de/serialization fn() for each shape]
+
+---
+
+`redux && mobx`
+.appear[
+    `true`
+]
+
+???
+
+Would'nt be awesome to get the best of both world?
+
+---
+
+## MobX-State-Tree
+
+<img src="img/react.svg" width="50" /> It's React
+
+<img src="img/git.png" width="50" /> It's Git
+
+...but for data
+
+
+???
+
+Today we'll discover together MobX-State-Tree, a library that tries to merge the best of both worlds, for an optimal developer experience.
 
 ---
 
 ## MobX-State-Tree
 Getting the best of both worlds!
+
+---
+
+### Defining data shape
+```javascript
+import {types} from "mobx-state-tree"
+
+const Todo = types.model({
+    name: "",
+    done: false
+})
+```
+
+???
+
+In the center of MST there is the concept of a model.
+Models define the base building unit for our application, just like React components do.
 
 ---
 
@@ -265,13 +282,28 @@ const Todo = types.model({
 }))
 ```
 
-.appear[
+???
+Each model could be optionally enriched with other kind of informations, such actions.
+This gives a clean and readable definition of our data shape, and allows colocation of actions.
+
+---
+
+### MobX-State-Tree
+Data shape is clear
+
+Actions are colocated
+
+---
 ### Creating a model instance
 ```javascript
 const work = Todo.create()
 work.toggle()
 ```
-]
+
+???
+
+But now that we have defined our data shape, how we create a model instance to use and connect to our application?
+That's really easy, given our model definition, we just type in create to get a new instance with the provided defaults.
 
 ---
 
@@ -280,23 +312,28 @@ work.toggle()
 import {getSnapshot} from "mobx-state-tree"
 
 const serializedData = getSnapshot(work)
+// serializedData = {name: "Work!", done: false}
 ```
 
-.appear[
+???
+
+Thanks to those information, we could produce immutable snapshots for free out of mutable objects.
+---
+
 ### Creating an instance from a snapshot
 ```javascript
 const work = Todo.create(serverData)
 ```
-]
 
-.appear[
 ### Updating an instance from a snapshot
 ```javascript
 import {applySnapshot} from "mobx-state-tree"
 
 applySnapshot(work, serverData)
 ```
-]
+
+???
+We could also create new objects given a snapshot, or update existing ones to match the given snapshot.
 
 ---
 
@@ -314,6 +351,10 @@ onSnapshot(work, newSnapshot => {
     )
 })
 ```
+
+???
+
+Thanks to MobX reactive data structures used in MST, we could also subscribe to any change of a model snapshot, and perform anything we want with that.
 
 ---
 
@@ -334,790 +375,257 @@ function travelAt(index){
 
 ???
 With all those bounties, implementing time travel becames pretty straight forward.
+We just use a list of previous snapshots, push onto the list every new snapshot, and to travel back we just need to reapply the snapshots in the list in the desidered order.
 
 ---
 
-# Mutable Model Graphs
+### MobX-State-Tree
 
-<br/>
-<br/>
+- creates MobX observable objects
 
-![graph2](img/graph2.png)
+--
+- produces snapshots automatically
+
+--
+- can create observable objects from snapshot
+
+--
+- can update observable objects from snapshot
+
+--
+- allows time travelling
 
 ---
 
-# Mutable Model Graphs
-
-<br/>
-<br/>
-
-![graph3](img/graph3.png)
-
----
-
-# Immutable Data Trees
-
-<br/>
-<br/>
-
-![redux](img/redux1.png)
-
+## Composing Models
 ???
 
-Two years ago, Redux was introduced on this very same conference. And it has set a new level on what we want in terms of DX and predictability.
-
----
-
-# Immutable Data Trees
-
-<br/>
-<br/>
-
-![redux](img/redux2.png)
-
----
-
-# Immutable Data Trees
-
-<br/>
-<br/>
-
-![redux](img/redux3.png)
-
----
-
-class: ticks2
-
-<p style="position:relative;left: 106px;font-style:italic;">
-    <span style="font-size: 0.6em">Immutable Trees &nbsp;&nbsp;&nbsp; Model Graphs<span>
-</p>
-
-.tick1[cheap snapshots<i class="em em-white_check_mark"></i>]
-.tick2[fine grained updates<i class="em em-white_check_mark"></i>]
-.tick1[tree structure<i class="em em-white_check_mark"></i>]
-.tick2[graph structure<i class="em em-white_check_mark"></i>]
-.tick1[easy hydration<i class="em em-white_check_mark"></i>]
-.tick2[co-location of actions<i class="em em-white_check_mark"></i>]
-.tick1[protection of data<i class="em em-white_check_mark"></i>]
-.tick1[replayable actions<i class="em em-white_check_mark"></i>]
-.tick2[straight forward actions<i class="em em-white_check_mark"></i>]
-.tick1[devtool support<i class="em em-white_check_mark"></i>]
-.tick2[static analysis / typing<i class="em em-white_check_mark"></i>]
-.tick1[ref-by-state<i class="em em-white_check_mark"></i>]
-.tick2[ref-by-identity<i class="em em-white_check_mark"></i>]
-
-???
-
-Why a tree Trees can be traversed in predicatable, finite order
-
-
----
-
-## Snapshots Are Awesome<i class="em em-camera"></i>
-
-.appear[What if I could get them for free after each mutation?]
-
-???
-
-Snapshots are awesome; like taxes are awesome. I like the idea because all the benefits it yields. I just don't like to pay
-
-So what if..
-
-.. structural sharing is mandatory
-
----
-
-class: boxedimg
-
-![img](img/tree_store.png)
-
----
-
-Demo
-
----
+Although, out application is'nt just a set of entities, but rather a tree of them.
+Somewhere we need to tell our application how to compose them, in order to create our tree.
+--
 
 ```javascript
-class Book {
-    @observable title: string
-    @observable price: number
+import {types} from "mobx-state-tree"
 
-    @computed get snapshot() {
-        return {
-            title: this.title,
-            price: this.number
-        }
-    }
-}
-```
-
----
-
-```javascript
-class Store {
-    @observable books: Book[] = []
-
-    @computed get snapshot() {
-        return {
-            todos: this.books.map(book => book.snapshot)
-        }
-    }
-}
-```
-
----
-
-class: boxedimg
-
-![img](img/todo1.png)
-
----
-
-class: boxedimg
-
-![img](img/todo2.png)
-
----
-
-class: boxedimg
-
-![img](img/todo3.png)
-
----
-
-class: boxedimg
-
-![img](img/seeds.png)
-
----
-
-<img src="img/seed1.png" width="350px"/>
-<img src="img/seed2.png" width="350px"/>
-
-* How to get back from a seed to a full tree? <i class="em em-deciduous_tree"></i>
-* `get snapshot` boilerplate <i class="em em-confused"></i>
-
----
-
-Demo
-
----
-
-
-```javascript
-import { onSnapshot, applySnapshot } from "mobx-state-tree"
-
-const history = []
-
-onSnapshot(store, snapshot => {
-    history.push(snapshot)
-})
-
-replay(index) {
-    applySnapshot(store, history[index])
-}
-```
-
----
-
-## Type Information!<i class="em em-dizzy"></i>
-
-.appear[Compile time type checks]
-
-.appear[Run time type checks]
-
-.appear[Behavior]
-
----
-
-class: boxedimg
-
-![img](img/mst3.png)
-
----
-
-# Composing Types
-
-```javascript
-import {types, getSnapshot} from "mobx-state-tree"
-
-const Type = types.model(properties, actions)
-```
-
-.appear[
-```javascript
-const instance = Type.create(snapshot)
-instance.someAction()
-```
-]
-
-.appear[
-```javascript
-const snapshot = getSnapshot(instance)
-```
-]
-
----
-
-# Composing Types
-
-```javascript
-const Book = types.model({
-    title: types.string,
-    price: types.number
-}, {
-    setPrice(newPrice) {
-        this.price = newPrice
-    }
+const TodoStore = types.model("TodoStore", {
+    todos: types.array(Todo)
 })
 ```
-
-.appear[
-```javascript
-const Store = types.model({
-    books: types.array(Book)
-})
-```
-]
+???
+In MST this can be easily accomplished through type composition.
 
 ---
 
-# Composing Types
-
 ```javascript
-const store = Store.create({
-    books: [{
-        title:
-            "The Hidden Life of Trees: What They Feel, How They Communicate",
-        price: 24.95
-    }]
+import {types} from "mobx-state-tree"
+
+const store = TodoStore.create({
+    todos: [{name: "Work", done: true}]
 })
 
+assertTrue(store.todos[0].name === "Work")
 ```
-
-.appear[
-```javascript
-store.books[0].setPrice(13.57)
-```
-]
-
----
-
-# Composing Types
-
-```javascript
-store.books.push(Book.create({ title: "A Tree Grows in Brooklyn" }))
-```
-
-.appear[
-```javascript
-store.books.push({ title: "A Tree Grows in Brooklyn" })
-```
-]
-
-.appear[
-```javascript
-store.books[0].setPrice(13.57)
-```
-]
-
 ???
-
-When modifying the tree at any point, type is infered from the typesystem and applied
-
----
-
-# Run Time Type Checking
-
-```javascript
-const store = Store.create({
-    books: [{
-        price: "24.95"
-    }]
-})
-```
-
-.appear[
-```
-Error while converting `{"books":[{"price":"24.95"}]}` to `Store`:
- at path "/books/0/title" value `undefined` is not assignable to type: `string`.
- at path "/books/0/price" value `"24.95"` is not assignable to type: `number`.
-```
-]
-
----
-
-# Design Time Type Checking
-
-<br/>
-<br/>
-
-.appear[
-![img](img/tserror2.png)
-]
-
----
-
-# Type Checking
-
-TComb inspired
-
-collections, refinements, unions, literals, recursive types
-
-<img src="img/gcanti.png" height="200px" style="border-radius:10px; margin-right: 20px;"/>
-<img src="img/mattia.jpg" height="200px" style="border-radius:10px"/>
-
-???
-
-Mattia Manzati https://twitter.com/@mattiamanzati) and
-Giulio Canti https://twitter.com/GiulioCanti),
-
----
-
-class: ticks3
-
-<p style="position:relative;left: 106px;font-style:italic;">
-    <span style="font-size: 0.6em">Immutable Trees &nbsp;&nbsp;&nbsp; Model Graphs&nbsp;&nbsp;&nbsp; Mobx-State-Tree<span>
-</p>
-
-.tick1[cheap snapshots<i class="em em-white_check_mark"></i>.appear[<i class="em em-palm_tree"></i>]]
-.tick2.faded[fine grained updates<i class="em em-white_check_mark"></i>]
-.tick1[tree structure<i class="em em-white_check_mark"></i>.appear[<i class="em em-palm_tree"></i>]]
-.tick2.faded[graph structure<i class="em em-white_check_mark"></i>]
-.tick1[easy hydration<i class="em em-white_check_mark"></i>.appear[<i class="em em-palm_tree"></i>]]
-.tick2[co-location of actions<i class="em em-white_check_mark"></i>.appear[<i class="em em-palm_tree"></i>]]
-.tick1.faded[protection of data<i class="em em-white_check_mark"></i>]
-.tick1.faded[replayable actions<i class="em em-white_check_mark"></i>]
-.tick2[straight forward actions<i class="em em-white_check_mark"></i>.appear[<i class="em em-palm_tree"></i>]]
-.tick1.faded[devtool support<i class="em em-white_check_mark"></i>]
-.tick2[static analysis / typing<i class="em em-white_check_mark"></i>.appear[<i class="em em-palm_tree"></i>]]
-.tick1.faded[ref-by-state<i class="em em-white_check_mark"></i>]
-.tick2.faded[ref-by-identity<i class="em em-white_check_mark"></i>]
-
----
-
-Patches Demo
-
-???
-
-MobX powered
-
-Patches
-
----
-
-# Actions
-
-```javascript
-const Book = types.model({
-    title: types.string,
-    price: types.number
-}, {
-    setPrice(newPrice) {
-        this.price = newPrice
-    }
-})
-```
-
----
-
-# Actions
-
-* Instances can only be modified through actions
-* Actions can only modify own subtree
-
----
-
-# Actions
-
-```javascript
-store.books[0].title = "I hate trees!"
-```
-
-.appear[
-```
-Error: Cannot modify 'Book@/books/0',
-the object is protected and can only be modified by using an action.
-```
-]
-
----
-
-Demo
-
----
-
-# Actions
-
-* Replayable
-* Method invocation _produces_ action description
-* Middleware support
-
----
-
-## Use Case: Modify Complex Data In Wizard
-
-???
-
-Use case syncing actions over websockets with other clients
+Features like snapshots will continue to work as expected, for example here we can see that a todo will be correctly created when restoring from a snapshot.
 
 ---
 
 ```javascript
-import { clone, recordActions } from "mobx-state-tree"
+import {types} from "mobx-state-tree"
 
-const bookCopy = clone(store.books[0])
-```
-
-.appear[
-```javascript
-function clone(tree) {
-    return getType(tree).create(getSnapshot(tree))
-}
-```
-]
-
----
-
-```javascript
-import { clone, recordActions } from "mobx-state-tree"
-
-const bookCopy = clone(store)
-const recorder = recordActions(bookCopy)
-```
-
-.appear[
-```javascript
-...user modifies the book in a wizard
-And upon commit...
-```
-]
-
-.appear[
-```javascript
-recorder.replay(store.books[0])
-```
-]
-
----
-
-class: ticks3
-
-<p style="position:relative;left: 106px;font-style:italic;">
-    <span style="font-size: 0.6em">Immutable Trees &nbsp;&nbsp;&nbsp; Model Graphs&nbsp;&nbsp;&nbsp; Mobx-State-Tree<span>
-</p>
-
-.tick1.faded[cheap snapshots<i class="em em-white_check_mark"></i><i class="em em-palm_tree"></i>]
-.tick2[fine grained updates<i class="em em-white_check_mark"></i>.appear[<i class="em em-palm_tree"></i>]]
-.tick1.faded[tree structure<i class="em em-white_check_mark"></i><i class="em em-palm_tree"></i>]
-.tick2.faded[graph structure<i class="em em-white_check_mark"></i>]
-.tick1.faded[easy hydration<i class="em em-white_check_mark"></i><i class="em em-palm_tree"></i>]
-.tick2.faded[co-location of actions<i class="em em-white_check_mark"></i><i class="em em-palm_tree"></i>]
-.tick1[protection of data<i class="em em-white_check_mark"></i>.appear[<i class="em em-palm_tree"></i>]]
-.tick1[replayable actions<i class="em em-white_check_mark"></i>.appear[<i class="em em-palm_tree"></i>]]
-.tick2.faded[straight forward actions<i class="em em-white_check_mark"></i><i class="em em-palm_tree"></i>]
-.tick1.faded[devtool support<i class="em em-white_check_mark"></i>]
-.tick2.faded[static analysis / typing<i class="em em-white_check_mark"></i><i class="em em-palm_tree"></i>]
-.tick1.faded[ref-by-state<i class="em em-white_check_mark"></i>]
-.tick2.faded[ref-by-identity<i class="em em-white_check_mark"></i>]
-
----
-
-class: fullscreen
-
-![img](img/elrond.jpg)
-
-???
-
-"Death is gift to men" (Elrond in a LOTR movie)
-
----
-
-# References
-
-```javascript
-function printPrice(book: Book) {
-    setTimeout(
-        () => console.log(book.price),
-        1000
-    )
-}
-
-printPrice(store.books.get("ISBN-123"))
-```
-
-???
-
-what does `book` parameter refer to?
-* the state of the passed book at a specific point in time?
-* the concept of the passed book, regardless what state it is in currently
-
----
-
-class: boxedimg
-
-![img](img/seasons.jpg)
-
-???
-
-Refer to the state of the tree at present, or just the concept
-
----
-
-class: boxedimg
-
-![img](img/refs.png)
-
----
-
-# References
-
-```javascript
-function printPrice(book: Book) {
-    setTimeout(
-        () => console.log(book.price),
-        1000
-    )
-}
-
-printPrice(store.books.get("ISBN-123"))
-```
-
-|  Immutable Trees | Mutable Model Graphs |
-| --- | ---- | --- |
-| .appear[`price` won't have changed] | .appear[`price` might have changed] |
-| .appear[`price` might be stale] | .appear[`price` will not be stale] |
-
-???
-
-artifical example. but what if it is no log, but a debounced function to send todo to backend?
-
----
-
-# References
-
-```javascript
-function printPrice(book: Book) {
-    setTimeout(
-        () => console.log(book.price),
-        1000
-    )
-}
-```
-
-```javascript
-printPrice(store.books.get("ISBN-123"))
-```
-
-```javascript
-printPrice(getSnapshot(store.books.get("ISBN-123")))
-```
-
----
-
-# References
-
-```
-printPrice(store.books.get("ISBN-123"))
-store.removeBook("ISBN-123")
-
-// what will be printed?
-```
-
-.appear[
-```
-Error: This object has died and is no longer part
-of a state tree. It cannot be used anymore.
-```
-]
-
-???
-
-Defends against those kind of bugs, where while debugging, you actually are looking at the wrong object without realizing for a while.
-
-Immutability defends against accidental modifications
-
-Defends against accidental stale reads
-
----
-
-class: fullscreenw
-
-![img](img/swing.jpg)
-
----
-
-## mobx-state-tree
-
-Protection against uncoordinated modifications
-
-Protection against stale reads
-
----
-
-class: fullscreenw
-
-![tree](img/eden2.jpg)
-
----
-
-# Graphs
-
-```
-bookStore
-   - books
-       - book A
-       - book B
-   - cart
-       - entry 1
-           - book A ?
-           - quantity
-       - entry 2
-           - book B ?
-           - quantity
-```
-
----
-
-# Graphs
-
-<br/>
-
-```javascript
-const CartEntry = types.model({
-    amount: types.number,
-    book: types.reference(Book)
+const store = TodoStore.create({
+    todos: [{name: "Work", done: true}]
 })
 
-cartEntry.book = bookStore.books[0]
+assertTrue(store.todos[0].done === true)
 
-console.log(bookEntry.book.title) // OK
+store.todos[0].toggle()
 
-console.dir(getSnapshot(bookEntry))
+assertTrue(store.todos[0].done === false)
 ```
-
-.appear[
-```javascript
-{
-    amount: 3,
-    book: "24"
-}
-```
-]
-
----
-
-class: ticks3
-
-.tick1.faded[cheap snapshots<i class="em em-white_check_mark"></i><i class="em em-palm_tree"></i>]
-.tick2.faded[fine grained updates<i class="em em-white_check_mark"></i><i class="em em-palm_tree"></i>]
-.tick1.faded[tree structure<i class="em em-white_check_mark"></i><i class="em em-palm_tree"></i>]
-.tick2[graph structure<i class="em em-white_check_mark"></i>.appear[<i class="em em-palm_tree"></i>]]
-.tick1.faded[easy hydration<i class="em em-white_check_mark"></i><i class="em em-palm_tree"></i>]
-.tick2.faded[co-location of actions<i class="em em-white_check_mark"></i><i class="em em-palm_tree"></i>]
-.tick1.faded[protection of data<i class="em em-white_check_mark"></i><i class="em em-palm_tree"></i>]
-.tick1.faded[replayable actions<i class="em em-white_check_mark"></i><i class="em em-palm_tree"></i>]
-.tick2.faded[straight forward actions<i class="em em-white_check_mark"></i><i class="em em-palm_tree"></i>]
-.tick1[devtool support<i class="em em-white_check_mark"></i>.appear[<i class="em em-palm_tree"></i>]]
-.tick2.faded[static analysis / typing<i class="em em-white_check_mark"></i><i class="em em-palm_tree"></i>]
-.tick1[ref-by-state<i class="em em-white_check_mark"></i>.appear[<i class="em em-palm_tree"></i>]]
-.tick2[ref-by-identity<i class="em em-white_check_mark"></i>.appear[<i class="em em-palm_tree"></i>]]
-
----
-
-class: ticks3
-
-.tick1[cheap snapshots<i class="em em-white_check_mark"></i><i class="em em-palm_tree"></i>]
-.tick2[fine grained updates<i class="em em-white_check_mark"></i><i class="em em-palm_tree"></i>]
-.tick1[tree structure<i class="em em-white_check_mark"></i><i class="em em-palm_tree"></i>]
-.tick2[graph structure<i class="em em-white_check_mark"></i><i class="em em-palm_tree"></i>]
-.tick1[easy hydration<i class="em em-white_check_mark"></i><i class="em em-palm_tree"></i>]
-.tick2[co-location of actions<i class="em em-white_check_mark"></i><i class="em em-palm_tree"></i>]
-.tick1[protection of data<i class="em em-white_check_mark"></i><i class="em em-palm_tree"></i>]
-.tick1[replayable actions<i class="em em-white_check_mark"></i><i class="em em-palm_tree"></i>]
-.tick2[straight forward actions<i class="em em-white_check_mark"></i><i class="em em-palm_tree"></i>]
-.tick1[devtool support<i class="em em-white_check_mark"></i><i class="em em-palm_tree"></i>]
-.tick2[static analysis / typing<i class="em em-white_check_mark"></i><i class="em em-palm_tree"></i>]
-.tick1[ref-by-state<i class="em em-white_check_mark"></i><i class="em em-palm_tree"></i>]
-.tick2[ref-by-identity<i class="em em-white_check_mark"></i><i class="em em-palm_tree"></i>]
-
----
-
-Demo
+???
+Methods attached to our model will continue to work as expected.
 
 ---
 
 ```javascript
-import { types } from 'mobx-state-tree'
+import {types} from "mobx-state-tree"
 
+const store = TodoStore.create({
+    todos: [{name: "Work", done: true}]
+})
+
+store.todos.push({name: "Speak at React Alicante"})
+store.todos[1].toggle()
+```
+???
+Given the provided type information, we could even pass snapshots as property of a given model instance.
+MST will lookup which model type should live at that part of our state shape, and create an instance with the given snapshot automatically.
+
+---
+
+## Types
+???
+The Type System one of the focal point of MST that allows having the best features of both mutable and immutable world.
+
+--
+
+```javascript
 const Todo = types.model({
-    text: 'Learn Redux',
-    completed: false,
-    id: 0
-})
-
-const TodoStore = types.model({
-    todos: types.array(Todo),
-
-    findTodoById: function (id) {
-      return this.todos.find(todo => todo.id === id)
-    }
-}, {
-    DELETE_TODO({id}) {
-      this.todos.remove(this.findTodoById(id))
-    }
-    // .. and more
+    name: "",
+    done: false
 })
 ```
 
 ???
 
-why the weird function name?
-why 'learn redux'?
+When I showed you how to define a model in MST, I used a syntax shorthand that allows passing in primitives to infer their types and use the provided value as default.
+--
+...is an alias of...
 
-Actually, if you check out the sources, you will notice the original reducer unit tests are still in there
+```javascript
+const Todo = types.model({
+    name: types.optional(types.string, ""),
+    done: types.optional(types.boolean, false)
+})
+
+```
+???
+In the given example MST was inferring string and boolean types.
 
 ---
 
-<img src="img/logo.png" style="height:150px"/>
+## Typechecking
 
-## MST: Combining The Opposing Paradigms
+```javascript
+const incorrect = Todo.create({ name: false, done: 1})
+```
+```
+[mobx-state-tree] Error while converting 
+   `{"name":false,"done":1}` to `Todo`:
+at path "/name" value `false` is not assignable 
+   to type: `string` (Value is not a string).
+at path "/done" value `1` is not assignable 
+   to type: `boolean` (Value is not a boolean).
+```
+???
+The first obvious benefits of having types is that MST can now perform sanity checks over the provided snapshots.
+They will be fired even when we change a property of a model instance, so this ensure runtime type checking of our data.
 
-The best ideas<i class="em em-bulb"></i>
-<br/>+<br/>
-The best practices<i class="em em-construction_worker"></i>
-<br/>=<br/>
-The best productivity<i class="em em-running"></i>
+---
+background-image: url(img/autocompletion.png)
+
+???
+We also provide TypeScript typings that are automatically inferred from the model definition. This allows to use TypeScript compile time typechecks without using any TS syntax.
+If someone wants to open a PR for flow support, it's welcome!
+
+---
+
+`
+runtime && buildtime
+`
+.appear[
+`
+"developerHappy"
+`
+]
+
+---
+
+```
+enumeration
+model
+compose
+reference
+union
+optional
+literal
+maybe
+refinement
+string
+boolean
+number
+Date
+map
+array
+frozen
+identifier
+late
+undefined
+null
+```
 
 ???
 
-When is it available?
-
-Star!
-
-Is it completely ready?
-
-No.
-
-But, worse is better.
-
-Let's publish!
-
-TODO Visit booth prizes thingy
+And MST provides lot of utility types. Most of them were inspired by the work of Giulio Canti over the tcomb library that provides type combinators.
 
 ---
 
-<div style="position: absolute;
-    z-index: 1000;
-    top: 150px;
-    background: white;
-    width: 106%;
-    margin-left: -4em;
-    padding: 20px;">
-    <i class="em em-star"></i>https://github.com/mobxjs/mobx-state-tree<i class="em em-star"></i>
-</div>
+## Types
+- Provides information about how to de/serialize the state
+- Perform runtime (& buildtime) typechecks
 
-.background[
-![img](img/tree-hug.jpg)
-]
+---
 
+## Observability
+
+???
+
+Back to MobX & Redux, observability is one of the huge differencies between the two libraries.
+
+---
+### MobX 
+.appear[Fine grained observability]
+
+### Redux
+.appear[If reference changes, value changed]
+
+---
+
+### MobX-State-Tree
+- fine grained observability
+- if value changes, new snapshot emits
+
+???
+MST get the best of both.
+
+---
+
+## Derived Values
+
+???
+
+Another kind of value that we will eventually encounter in the state of our application are derived values.
+---
+
+## Redux
+
+```javascript
+const getPending = memoize(todos => todos.filter(todo => todo.done).length)
+```
+???
+In redux derived values are expressed through selectors.
+As we know, selectors are just functions that takes in a part of the state and return a derived value out of it.
+It's left to the developer how to optimize those function execution to avoid wasting performance on them.
+
+---
+
+## MobX
+
+```javascript
+class TodoStore{
+    // ...
+
+    @computed get pending(){
+        return todos.filter(todo => todo.done).length
+    }
+}
+```
+
+???
+
+In the MobX world memoization of derived values is done automatically. 
+
+Derived values are usually expressed through class getters, and they keep track of observed values.
+
+Each time one of the observed value change, the computed value is updated and memoized again.
