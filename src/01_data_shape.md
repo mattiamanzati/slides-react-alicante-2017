@@ -51,8 +51,8 @@ And while we are at it, we could note that reducer and actions are'nt colocated,
 
 ```javascript
 class Todo {
-    @observable name: string = ""
-    @observable done: boolean = false
+    @observable name = ""
+    @observable done = false
 
     @action toggle(){
         this.done != this.done

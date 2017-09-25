@@ -35,12 +35,14 @@ Another kind of value that we will eventually encounter in the state of our appl
 const getPending = 
     todos => todos.filter(todo => !todo.done).length
 ```
+
 .appear[
 ```javascript
 const getPending = 
     memoize(todos => todos.filter(todo => !todo.done).length)
 ```
 ]
+
 ???
 In redux derived values are expressed through selectors.
 As we know, selectors are just functions that takes in a part of the state and return a derived value out of it.
@@ -160,3 +162,9 @@ assertTrue(store.todos[0].done === false)
 You can also apply them back by using applyPatch.
 
 This allows scenarios like sending patches through a WebSocket connection to provide real-time collaboration.
+
+---
+
+## Patches
+- Fine grained serialized event
+- Implements RFC 6902

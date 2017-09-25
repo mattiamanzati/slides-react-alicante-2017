@@ -17,11 +17,11 @@ body {
     background-color: white;
 }
 
-table {
+.remark-slide table {
     width: 100%;
 }
 
-h1 {
+.remark-slide h1 {
     position: absolute;
     top: 10px;
     display: block;
@@ -31,16 +31,16 @@ h1 {
     font-size: 40px;
 }
 
-p, li, div {
+.remark-slide p, .remark-slide li, .remark-slide div {
     font-size: 36px;
 }
 
-p {
+.remark-slide p {
     margin-top: 0.5em;
     margin-bottom: 0.5em;
 }
 
-small {
+.remark-slide small {
     font-size: 28px;
 }
 
@@ -61,7 +61,7 @@ hr {
     margin-bottom: 1em;
 }
 
-.remark-code, .remark-code-line {
+.remark-slide .remark-code, .remark-slide .remark-code-line {
     font-size: 22px;
 }
 
@@ -71,7 +71,7 @@ hr {
     opacity: 0.7;
 }
 
-.remark-slide-content pre {
+.remark-slide .remark-slide-content pre {
     margin-top: 0.5em;
     margin-bottom: 0.5em;
 }
@@ -104,20 +104,20 @@ ul, ol {
     padding-right: 0;
 }
 
-.remark-slide-content pre  code.remark-code {
-    padding: 0.5em 5em;
+.remark-slide .remark-slide-content pre code.remark-code {
+    padding: 0.5em 3em;
 }
 
-.remark-inline-code {
+.remark-slide .remark-inline-code {
     font-size: 0.9em;
     color: orangered;
 }
 
-.remark-slide-content .appeared pre code,
-.remark-slide-content .boring pre code
+/* .remark-slide .remark-slide-content .appeared pre code,
+.remark-slide .remark-slide-content .boring pre code
 {
     margin-left: 3em;
-}
+} */
 
 .fullscreen, .fullscreenw, .boxedimg {
     padding: 0
@@ -285,10 +285,10 @@ div.lighten {
     opacity: 0.2;
 }
 
-.remark-notes, .remark-notes p, .remark-notes-preview, .remark-notes-preview p{
+/* .remark-notes, .remark-notes p, .remark-notes-preview, .remark-notes-preview p{
     font-size: 85% !important;
 }
 
 .remark-toolbar .remark-toolbar-timer{
     font-size: 100%;
-}
+} */
