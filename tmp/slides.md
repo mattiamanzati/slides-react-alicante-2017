@@ -1,13 +1,12 @@
 <!-- 00_intro.md-->
 
+---
 
-## Mutable or Immutable? <br/> Let's do both!
+background-image: url(img/title.jpeg)
 
-<small>
-React Alicante 2017
+---
 
-Mattia Manzati - @MattiaManzati
-</small>
+background-image: url(img/sponsors.jpeg)
 
 ---
 
