@@ -478,7 +478,7 @@ So it is really easy to rehydrate data onto our store, you just need to pass it 
 ```javascript
 class Todo {
     // ...
-    @computed snapshot(){
+    @computed get snapshot(){
         return {
             name: this.name,
             done: this.done
@@ -539,22 +539,11 @@ Would'nt be awesome to get the best of both world?
 ---
 
 ## MobX-State-Tree
-
-<img src="img/react.svg" width="50" /> It's React
-
-<img src="img/git.png" width="50" /> It's Git
-
-...but for data
-
+Getting the best of both worlds!
 
 ???
 
 Today we'll discover together MobX-State-Tree, a library that tries to merge the best of both worlds, for an optimal developer experience.
-
----
-
-## MobX-State-Tree
-Getting the best of both worlds!
 
 ---
 
@@ -870,187 +859,96 @@ null
 And MST provides lot of utility types. Most of them were inspired by the work of Giulio Canti over the tcomb library that provides type combinators.
 
 ---
-
 ## Types
 - Provides information about how to de/serialize the state
 - Perform runtime (& buildtime) typechecks
 
 ---
-<!-- 03_observability.md-->
 
-## Observability
-
-???
-
-Back to MobX & Redux, observability is one of the huge differencies between the two libraries.
-
----
-### MobX 
-.appear[Fine grained observability]
-
-### Redux
-.appear[If reference changes, value changed]
-
----
-
-### MobX-State-Tree
-- fine grained observability
-- if value changes, new snapshot emits
+## Reconciliation
 
 ???
-MST get the best of both.
+Having a collection of mutable entities onto our store and applying back an immutable snapshot introduces a reconciliation problem.
 
----
+Let's give it a look by a small example.
 
-## Derived Values
-
-???
-
-Another kind of value that we will eventually encounter in the state of our application are derived values.
----
-
-## Redux
+--
 
 ```javascript
-const getPending = 
-    todos => todos.filter(todo => !todo.done).length
+const store = AppStore.create()
+const work = Todo.create({id: 1, name: 'Work', done: true})
+const sleep = Todo.create({id: 2, name: 'Sleep', done: false})
+store.todos.push(work, sleep)
 ```
 
-.appear[
+???
+Let's say that through our UI and business login the store ends up creating 2 todos, Work and Sleep.
+
+--
 ```javascript
-const getPending = 
-    memoize(todos => todos.filter(todo => !todo.done).length)
+{
+    todos: [
+        {name: 'Eat', done: false},
+        {name: 'Work', done: true}
+    ]
+}
+
 ```
-]
 
 ???
-In redux derived values are expressed through selectors.
-As we know, selectors are just functions that takes in a part of the state and return a derived value out of it.
-It's left to the developer how to optimize those function execution to avoid wasting performance on them.
+At any point, a new snapshot arrives from the server, saying that our todos should look like this.
+
+The question is; what really happened?
+Did Sleep changed to Eat or it got deleted and a new one got created?
+---
+
+```javascript
+const store = AppStore.create()
+assertTrue(work === store.todos[0])
+```
+???
+Please notice that we cannot delete every old object and create a new one like you may do with immutable objects, because references needs to be preserved.
+---
+
+## React... but for data!
+
+???
+
+This problem was already well known by the React community and MST solved this problem the same way React does.
 
 ---
 
-## MobX
-
 ```javascript
-class TodoStore{
-    // ...
+const Todo = types.model({
+    id: types.identifier(types.number),
+    name: types.optional(types.string, ""),
+    done: types.optional(types.boolean, false)
+})
 
-    @computed get pending(){
-        return todos.filter(todo => !todo.done).length
-    }
+```
+???
+
+When we define our Todo, we can define an identifier attribute to use when comparing items during reconciliation.
+
+---
+```javascript
+const store = AppStore.create()
+const work = Todo.create({id: 1, name: 'Work', done: true})
+const sleep = Todo.create({id: 2, name: 'Sleep', done: false})
+store.todos.push(work, sleep)
+```
+```javascript
+{
+    todos: [
+        {id: 2, name: 'Eat', done: false},
+        {id: 1, name: 'Work', done: true}
+    ]
 }
 ```
-
 ???
-
-In the MobX world memoization of derived values is done automatically. 
-
-Derived values are usually expressed through class getters, and they keep track of observed values.
-
-Each time one of the observed value change, the computed value is updated and memoized again.
-
+Thanks to this information, MST will now know that the two items shifted of place and the description of Sleep changed to Eat.
 ---
-### MobX 
-.appear[Automatically memoized derived values]
-
-### Redux
-.appear[Manually memoized values]
-
----
-
-## MobX-State-Tree
-
-```javascript
-import {types} from "mobx-state-tree"
-
-const TodoStore = types.model("TodoStore", {
-    todos: types.array(Todo)
-}).views(self => ({
-    get pending(){
-        return self.todos.filter(todo => !todo.done).length
-    }
-}))
-```
-
-???
-
-Since MST uses MobX instances, we can provide automatically memoized derived values.
-
-They can be easily defined as model views, and MST will automatically memoize and update them based on which model properties are used.
-
-And they are nicely colocated with our data and actions.
-
----
-
-## Reactions/Autorun
-
-```javascript
-import {reaction} from "mobx"
-
-reaction(
-    () => store.pending, 
-    pending => {
-        if(pending === 0){
-            console.log("Horray! Nothing left to do!")
-        }
-    }
-)
-```
-
-???
-
-Thanks to MobX, we also get for free reactions, which allow us to automatically perform actions whenever a value changes.
-
-Behind the scenes this means that you can use the mobx-react package to connect your store to your react components.
-
----
-
-## Fine grained snapshots? Patches!
-
-```javascript
-import {onPatch} from "mobx-state-tree"
-
-onPatch(store, patch => console.log(patch))
-
-store.todos[0].done = false
-```
-...logs...
-```javascript
-{op: "replace", path: "/todos/0/done", value: false}
-```
-???
-Another fine grained benefit in MST is patches.
-
-Patches are an immutable representation of fine grained changes, and they are automatically emitted by any MST instance.
-
----
-## Applying patches
-```javascript
-import {applyPatch} from "mobx-state-tree"
-
-applyPatch(
-    store, 
-    {op: "replace", path: "/todos/0/done", value: false}
-)
-
-assertTrue(store.todos[0].done === false)
-```
-
-???
-
-You can also apply them back by using applyPatch.
-
-This allows scenarios like sending patches through a WebSocket connection to provide real-time collaboration.
-
----
-
-## Patches
-- Fine grained serialized event
-- Implements RFC 6902
-
----
-<!-- 04_actions.md-->
+<!-- 03_actions.md-->
 
 ## Actions
 
@@ -1203,6 +1101,352 @@ applyAction(
 ```
 ???
 To apply back an action descriptor you just need to call applyAction over your store.
+---
+<!-- 04_observability.md-->
+
+## Observability
+
+???
+
+Back to MobX & Redux, observability is one of the huge differencies between the two libraries.
+
+---
+### MobX 
+.appear[Fine grained observability]
+
+### Redux
+.appear[If reference changes, value changed]
+
+---
+
+### MobX-State-Tree
+- fine grained observability
+- if value changes, new snapshot emits
+
+???
+MST get the best of both.
+
+---
+
+## Derived Values
+
+???
+
+Another kind of value that we will eventually encounter in the state of our application are derived values.
+---
+
+## Redux
+
+```javascript
+const getPending = 
+    todos => todos.filter(todo => !todo.done).length
+```
+
+.appear[
+```javascript
+const getPending = 
+    memoize(todos => todos.filter(todo => !todo.done).length)
+```
+]
+
+???
+In redux derived values are expressed through selectors.
+As we know, selectors are just functions that takes in a part of the state and return a derived value out of it.
+It's left to the developer how to optimize those function execution to avoid wasting performance on them.
+
+---
+
+## MobX
+
+```javascript
+class TodoStore{
+    // ...
+
+    @computed get pending(){
+        return todos.filter(todo => !todo.done).length
+    }
+}
+```
+
+???
+
+In the MobX world memoization of derived values is done automatically. 
+
+Derived values are usually expressed through class getters, and they keep track of observed values.
+
+Each time one of the observed value change, the computed value is updated and memoized again.
+
+---
+### MobX 
+.appear[Automatically memoized derived values]
+
+### Redux
+.appear[Manually memoized values]
+
+---
+
+## MobX-State-Tree
+
+```javascript
+import {types} from "mobx-state-tree"
+
+const TodoStore = types.model("TodoStore", {
+    todos: types.array(Todo)
+}).views(self => ({
+    get pending(){
+        return self.todos.filter(todo => !todo.done).length
+    }
+}))
+```
+
+???
+
+Since MST uses MobX instances, we can provide automatically memoized derived values.
+
+They can be easily defined as model views, and MST will automatically memoize and update them based on which model properties are used.
+
+And they are nicely colocated with our data and actions.
+
+---
+
+## Fine grained snapshots? Patches!
+
+```javascript
+import {onPatch} from "mobx-state-tree"
+
+onPatch(store, patch => console.log(patch))
+
+store.todos[0].done = false
+```
+...logs...
+```javascript
+{op: "replace", path: "/todos/0/done", value: false}
+```
+???
+Another fine grained benefit in MST is patches.
+
+Patches are an immutable representation of fine grained changes, and they are automatically emitted by any MST instance.
+
+---
+## Applying patches
+```javascript
+import {applyPatch} from "mobx-state-tree"
+
+applyPatch(
+    store, 
+    {op: "replace", path: "/todos/0/done", value: false}
+)
+
+assertTrue(store.todos[0].done === false)
+```
+
+???
+
+You can also apply them back by using applyPatch.
+
+This allows scenarios like sending patches through a WebSocket connection to provide real-time collaboration.
+---
+
+## I did a mistake! Revert back!
+
+```javascript
+import {onPatch} from "mobx-state-tree"
+
+onPatch(store, (patch, revertPatch) => console.log(patch, revertPatch))
+
+store.todos.push({name: 'Work!', done: false})
+```
+...logs...
+```javascript
+{op: "add", path: "/todos/0", value: {name: 'Work!', done: false}}
+{op: "remove", path: "/todos/0", value: {name: 'Work!', done: false}}
+```
+???
+And patches provide more than a simple and lightweight way of producing granular snapshots.
+
+With onPatch function you get for free revert patch for each emitted patch.
+---
+
+
+## I did a mistake! Revert back!
+```javascript
+let reversePatches = []
+let disposer = null
+
+try{
+    // subscribe for patches
+    disposer = onPatch(
+        store, 
+        (patch, reversePatch) => 
+            reversePatches.push(reversePatch)
+    )
+    // call some action...
+    store.possiblyFailingAction()
+
+}catch(e){
+    // revert back!
+    applyPatches(store, reversePatches.reverse())
+}finally{
+    disposer()
+}
+```
+
+???
+Thanks to reverse patches we can implement, almost for free, patterns like reverting any store change if something went wrong.
+
+---
+
+```javascript
+let recorderer = recordPatches(store)
+
+try{
+    // call some action...
+    store.possiblyFailingAction()
+
+}catch(e){
+    // revert back!
+    recorderer.undo(store)
+}finally{
+    recorderer.stop()
+}
+```
+
+???
+And since this pattern is really awesome, MST ships by default a patches recorder.
+
+---
+
+```javascript
+let recorderer = recordPatches(store)
+
+const store = AppStore.create()
+// create a copy of a todo
+const todo = Todo.create(getSnapshot(store.todos[0]))
+const recorderer = recordPatches(todo)
+// let the user do its thing...
+todo.toggle()
+// ok, time to commit!
+recorderer.replay(store.todos[0])
+
+```
+
+???
+Patch recorderer even allows to replay the emitted patches over another MST instance!
+This allow, for example, to perform editing in a wizard over a copy of the real todo, and when we are done, if all the data passes the checks, we can replay the changes over the real store.
+
+---
+
+## Patches... Git, but for data!
+- Fine grained serialized event
+- Implements RFC 6902
+- both apply and revert patch
+---
+<!-- 06_mobx.md-->
+
+## MobX Interop
+
+---
+
+## Reactions/Autorun
+
+```javascript
+import {reaction} from "mobx"
+
+reaction(
+    () => store.pending, 
+    pending => {
+        if(pending === 0){
+            console.log("Horray! Nothing left to do!")
+        }
+    }
+)
+```
+
+???
+
+Thanks to MobX, we also get for free reactions and autorun constructs, which allow us to automatically perform actions whenever a value changes.
+---
+
+## Observer HoC
+```javascript
+import {observer} from "mobx-react"
+
+const AppView = observer(props =>
+        <div>
+            <button onClick={e => props.store.addTodo(randomId(), 'New Task')}>Add Task</button>
+            {props.store.todos.values().map(todo => <TodoView todo={todo} />)}
+            <TodoCounterView store={props.store} />
+        </div>
+)
+
+```
+
+???
+Behind the scenes this means that you can use the mobx-react package to connect your store to your react components.
+
+This is really nice because there is no need to apply memoization or SCU.
+---
+<!-- 07_redux.md-->
+
+## And...Redux?
+
+--
+- Snapshot could be considered our redux state
+
+--
+- onSnapshot could be considered our store subscription
+
+--
+- applyAction could be considered our dispatch
+
+--
+- observer is our connect
+
+---
+
+## We can convert an MST instance into a redux store!
+
+```javascript
+import {asReduxStore} 
+    from 'mobx-state-tree/middleware/redux'
+
+const reduxStore = asReduxStore(store)
+```
+
+---
+
+
+## We can convert an MST instance into a redux store!
+
+```javascript
+import {connectReduxDevtools} 
+    from 'mobx-state-tree/middleware/redux'
+
+connectReduxDevtools(store)
+```
+
+---
+background-image: url(img/reduxdevtools.png)
+---
+<!-- 08_outro.md-->
+
+
+
+## MobX-State-Tree
+
+<img src="img/react.svg" width="50" /> It's React
+
+<img src="img/git.png" width="50" /> It's Git
+
+...but for data
+
+`npm install mobx-state-tree`
+
+---
+
+## Thanks for your time!
+
+@MattiaManzati
 		</textarea>
 		<script>require=(function(e,t,n){function i(n,s){if(!t[n]){if(!e[n]){var o=typeof require=="function"&&require;if(!s&&o)return o(n,!0);if(r)return r(n,!0);throw new Error("Cannot find module '"+n+"'")}var u=t[n]={exports:{}};e[n][0].call(u.exports,function(t){var r=e[n][1][t];return i(r?r:t)},u,u.exports)}return t[n].exports}var r=typeof require=="function"&&require;for(var s=0;s<n.length;s++)i(n[s]);return i})({"components/printing":[function(require,module,exports){
 module.exports=require('yoGRCZ');

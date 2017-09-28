@@ -103,29 +103,6 @@ And they are nicely colocated with our data and actions.
 
 ---
 
-## Reactions/Autorun
-
-```javascript
-import {reaction} from "mobx"
-
-reaction(
-    () => store.pending, 
-    pending => {
-        if(pending === 0){
-            console.log("Horray! Nothing left to do!")
-        }
-    }
-)
-```
-
-???
-
-Thanks to MobX, we also get for free reactions, which allow us to automatically perform actions whenever a value changes.
-
-Behind the scenes this means that you can use the mobx-react package to connect your store to your react components.
-
----
-
 ## Fine grained snapshots? Patches!
 
 ```javascript
@@ -162,9 +139,98 @@ assertTrue(store.todos[0].done === false)
 You can also apply them back by using applyPatch.
 
 This allows scenarios like sending patches through a WebSocket connection to provide real-time collaboration.
+---
+
+## I did a mistake! Revert back!
+
+```javascript
+import {onPatch} from "mobx-state-tree"
+
+onPatch(store, (patch, revertPatch) => console.log(patch, revertPatch))
+
+store.todos.push({name: 'Work!', done: false})
+```
+...logs...
+```javascript
+{op: "add", path: "/todos/0", value: {name: 'Work!', done: false}}
+{op: "remove", path: "/todos/0", value: {name: 'Work!', done: false}}
+```
+???
+And patches provide more than a simple and lightweight way of producing granular snapshots.
+
+With onPatch function you get for free revert patch for each emitted patch.
+---
+
+
+## I did a mistake! Revert back!
+```javascript
+let reversePatches = []
+let disposer = null
+
+try{
+    // subscribe for patches
+    disposer = onPatch(
+        store, 
+        (patch, reversePatch) => 
+            reversePatches.push(reversePatch)
+    )
+    // call some action...
+    store.possiblyFailingAction()
+
+}catch(e){
+    // revert back!
+    applyPatches(store, reversePatches.reverse())
+}finally{
+    disposer()
+}
+```
+
+???
+Thanks to reverse patches we can implement, almost for free, patterns like reverting any store change if something went wrong.
 
 ---
 
-## Patches
+```javascript
+let recorderer = recordPatches(store)
+
+try{
+    // call some action...
+    store.possiblyFailingAction()
+
+}catch(e){
+    // revert back!
+    recorderer.undo(store)
+}finally{
+    recorderer.stop()
+}
+```
+
+???
+And since this pattern is really awesome, MST ships by default a patches recorder.
+
+---
+
+```javascript
+let recorderer = recordPatches(store)
+
+const store = AppStore.create()
+// create a copy of a todo
+const todo = Todo.create(getSnapshot(store.todos[0]))
+const recorderer = recordPatches(todo)
+// let the user do its thing...
+todo.toggle()
+// ok, time to commit!
+recorderer.replay(store.todos[0])
+
+```
+
+???
+Patch recorderer even allows to replay the emitted patches over another MST instance!
+This allow, for example, to perform editing in a wizard over a copy of the real todo, and when we are done, if all the data passes the checks, we can replay the changes over the real store.
+
+---
+
+## Patches... Git, but for data!
 - Fine grained serialized event
 - Implements RFC 6902
+- both apply and revert patch

@@ -103,7 +103,7 @@ So it is really easy to rehydrate data onto our store, you just need to pass it 
 ```javascript
 class Todo {
     // ...
-    @computed snapshot(){
+    @computed get snapshot(){
         return {
             name: this.name,
             done: this.done
@@ -164,22 +164,11 @@ Would'nt be awesome to get the best of both world?
 ---
 
 ## MobX-State-Tree
-
-<img src="img/react.svg" width="50" /> It's React
-
-<img src="img/git.png" width="50" /> It's Git
-
-...but for data
-
+Getting the best of both worlds!
 
 ???
 
 Today we'll discover together MobX-State-Tree, a library that tries to merge the best of both worlds, for an optimal developer experience.
-
----
-
-## MobX-State-Tree
-Getting the best of both worlds!
 
 ---
 

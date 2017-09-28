@@ -162,7 +162,91 @@ null
 And MST provides lot of utility types. Most of them were inspired by the work of Giulio Canti over the tcomb library that provides type combinators.
 
 ---
-
 ## Types
 - Provides information about how to de/serialize the state
 - Perform runtime (& buildtime) typechecks
+
+---
+
+## Reconciliation
+
+???
+Having a collection of mutable entities onto our store and applying back an immutable snapshot introduces a reconciliation problem.
+
+Let's give it a look by a small example.
+
+--
+
+```javascript
+const store = AppStore.create()
+const work = Todo.create({id: 1, name: 'Work', done: true})
+const sleep = Todo.create({id: 2, name: 'Sleep', done: false})
+store.todos.push(work, sleep)
+```
+
+???
+Let's say that through our UI and business login the store ends up creating 2 todos, Work and Sleep.
+
+--
+```javascript
+{
+    todos: [
+        {name: 'Eat', done: false},
+        {name: 'Work', done: true}
+    ]
+}
+
+```
+
+???
+At any point, a new snapshot arrives from the server, saying that our todos should look like this.
+
+The question is; what really happened?
+Did Sleep changed to Eat or it got deleted and a new one got created?
+---
+
+```javascript
+const store = AppStore.create()
+assertTrue(work === store.todos[0])
+```
+???
+Please notice that we cannot delete every old object and create a new one like you may do with immutable objects, because references needs to be preserved.
+---
+
+## React... but for data!
+
+???
+
+This problem was already well known by the React community and MST solved this problem the same way React does.
+
+---
+
+```javascript
+const Todo = types.model({
+    id: types.identifier(types.number),
+    name: types.optional(types.string, ""),
+    done: types.optional(types.boolean, false)
+})
+
+```
+???
+
+When we define our Todo, we can define an identifier attribute to use when comparing items during reconciliation.
+
+---
+```javascript
+const store = AppStore.create()
+const work = Todo.create({id: 1, name: 'Work', done: true})
+const sleep = Todo.create({id: 2, name: 'Sleep', done: false})
+store.todos.push(work, sleep)
+```
+```javascript
+{
+    todos: [
+        {id: 2, name: 'Eat', done: false},
+        {id: 1, name: 'Work', done: true}
+    ]
+}
+```
+???
+Thanks to this information, MST will now know that the two items shifted of place and the description of Sleep changed to Eat.
