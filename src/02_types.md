@@ -250,3 +250,43 @@ store.todos.push(work, sleep)
 ```
 ???
 Thanks to this information, MST will now know that the two items shifted of place and the description of Sleep changed to Eat.
+
+---
+
+## React Lifecycle?
+
+```javascript
+const Todo = types
+        .model("Todo", {
+            title: ""
+        })
+        .actions(self => {
+            function afterCreate() {
+                console.log("new todo: " + self.title)
+            }
+            function beforeDestroy() {
+                console.log("destroy todo: " + self.title)
+            }
+            function afterAttach() {
+                console.log("attach todo: " + self.title)
+            }
+            function beforeDetach() {
+                console.log("detach todo: " + self.title)
+            }
+            return {
+                afterCreate,
+                beforeDestroy,
+                afterAttach,
+                beforeDetach
+            }
+        })
+```
+
+---
+
+## MobX-State-Tree Lifecycle
+
+- constructor -> afterCreate
+- componentDidMount -> afterAttach
+- componentWillUnmount -> beforeDetach
+- componentDidUnmount? -> beforeDestroy

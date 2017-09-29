@@ -1,10 +1,18 @@
 ---
-
 background-image: url(img/title.jpeg)
 
 ---
 
 background-image: url(img/sponsors.jpeg)
+
+---
+
+background-image: url(img/me.png)
+
+---
+
+background-image: url(img/italian.jpg)
+background-color: #000000
 
 ---
 

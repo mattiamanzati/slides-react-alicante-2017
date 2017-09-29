@@ -87,13 +87,13 @@ ul, ol {
 }
 
 .remark-slide-content {
-    vertical-align: middle;
+    /*vertical-align: middle;*/
     text-align: center;
 }
 
 .remark-slide-content ol, .remark-slide-content ul {
     text-align: left;
-    margin-left: 4em;
+    margin-left: 0em;
 }
 
 .remark-slide-content pre {
